@@ -1,0 +1,41 @@
+/*
+	CLI 2.0 Stylesheet
+
+	Now dynamic to support changing colours in the configuration.
+*/
+
+html, body { height:99%; }
+body { background-color:#000; font-family:"Courier New",Courier,monospace; margin:0 15px; overflow:hidden; padding:0; }
+pre, td, th, p, div { color:#FFF; font-family:"Courier New",Courier,monospace; font-size:1em; }
+div#screen { height:99%; margin:2px; overflow:auto; padding:0; }
+div, table { margin-bottom:1em; margin-top:0em; }
+pre, td, p { background-color:transparent; }
+code, p, span, td, th { font-size:1em; }
+p, div#display, ul { margin:0; }
+div#screen p, div#screen span, div#screen a { white-space:pre-wrap; }
+div#screen p.error { color:red; }
+div#screen li { list-style:none; }
+div#welcome { display:none; }
+h1, h2 { background-color:#FFF; color:#000; }
+h3 { color:#FFF; text-decoration:underline; margin:5px 0; }
+h4, h5, h6 { text-decoration:none; margin:0; }
+a, a:visited, .linky { color:#FFF; cursor:pointer; font-weight:bold; text-decoration:none; }
+a:hover, span.linky:hover, td.linky:hover { background-color:#FFF; color:#000; } /*you poor IE-using bastards*/
+table { border-collapse:collapse; }
+td { padding:0 1em 0 1em; }
+.stealth { background-color:#000; border:0px; color:#000; color:black; height:0px; width:0px; opacity:0; }
+#cursor { font-weight:normal; background-color:#FFF; color:#000; /*text-decoration:underline;*/ }
+div#pagealert { background-color:#FFF; bottom:0px; bottom:2px; color:#000; left:2px; margin:0; padding:0; position:absolute; text-align:center; visibility:hidden; width:auto; }
+div#indicators { bottom:0px; bottom:2px; left:2px; margin:0; padding:0; position:absolute; text-align:center; }
+div#indicators span { background-color:#FFF; color:#000; display:none; }
+#spinner { margin-left:1em; padding:0; display:none; font-weight:bold; line-height:0px; }
+div#cform { height:1px; left:0; position:absolute; top:0; width:1px; }
+img { color:#FFF; font-size:x-small; } /* for broken images */
+img.comic { background:white; padding:5px; }
+iframe { margin:0; border:none; }
+div.browser { margin:5px 2px; outline:2px solid gray; }
+form#searchform input[type=text] { background-color:#000; border:1px solid #FFF; color:#FFF; font-family:"Courier New",Courier,monospace; width:100px; }
+form#searchform input[type=submit] { background-color:#FFF; border:1px solid #000; color:#000; font-family:"Courier New",Courier,monospace; font-size:1em; }
+div#credit { position:absolute; bottom:0; color:#FFF; font-size:xx-small; opacity:.25; }
+div#credit:hover { opacity:.75; }
+div#credit a { font-size:xx-small; text-decoration:underline; }
