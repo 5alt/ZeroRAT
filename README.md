@@ -10,7 +10,7 @@
 程序依赖flask和sqlite3，自行pip安装
 
 ##客户端
-把<server>:<ip>替换成实际上线的地址
+把`<server>:<ip>`替换成实际上线的地址
 
 正常版
 
@@ -70,5 +70,6 @@ http://www.kammerl.de/ascii/AsciiSignature.php
 ##TODO
 * 完善命令
 * heartbeat随任务量来决定sleep时间
-
+* 通信流量加密
+* 修改执行命令payload在客户端不出现黑框
 
