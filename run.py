@@ -32,8 +32,8 @@ if not os.path.exists(download_dir):
 
 
 if __name__ == "__main__":
-    #http_server = HTTPServer(WSGIContainer(app))
-    #http_server.listen(port)
-    #IOLoop.instance().start()
-    app.run(host="0.0.0.0", port=port, debug=True)
+    http_server = HTTPServer(WSGIContainer(app))
+    http_server.listen(port)
+    IOLoop.instance().start()
+    #app.run(host="0.0.0.0", port=port, debug=True)
 
