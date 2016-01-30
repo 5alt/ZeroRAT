@@ -8,13 +8,17 @@ class action():
 	def __init__(self):
 		self.db = sqlite.sqlite()
 	def add(self, pid, signature, action, payload, status=0):
-		data = {'pid':pid, 'signature': signature, 'action':action, 'payload':payload, 'time':0, 'status':status}
+		data = {'pid':pid, 'signature': signature, 'action':action, 'payload':payload, 'time':0, 'status':status, 'repeat':0}
 		return self.db.insert('action', data)
 	def delete(self, pid):
 		return self.db.delete('action', {'pid': pid})
 	def get(self, pid):
 		sql = 'SELECT * FROM `action` WHERE pid=? ORDER BY id DESC LIMIT 1'
 		return self.db.fetchOne(sql, [pid])
+	def addrepeat(self, pid):
+		#maybe sqli, but client cannot control pid, lol
+		sql = 'UPDATE `action` SET repeat=repeat+1 WHERE pid="%s"'%pid
+		return self.db.execute(sql)
 	def gettask(self, signature):
 		sql = 'SELECT * FROM `action` WHERE signature=? AND (status%2)=0 ORDER BY id DESC LIMIT 1'
 		return self.db.fetchOne(sql, [signature])

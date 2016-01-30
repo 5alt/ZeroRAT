@@ -9,10 +9,12 @@ class sqlite:
         dbFilePath = config.DB_STRING
         if os.path.exists(dbFilePath):
             self.conn = db.connect(dbFilePath)
+            self.conn.text_factory = str
             self.cursor = self.conn.cursor()
         else:
             import install
             self.conn = db.connect(dbFilePath)
+            self.conn.text_factory = str
             self.cursor = self.conn.cursor()
 
     def fetchAll(self, sql,data=[]):
@@ -90,7 +92,7 @@ class sqlite:
         self.conn.commit()
         return status
     def execute(self,sql,data=[]):
-        status = self.cursor.execute(sql,data=[])
+        status = self.cursor.execute(sql)
         self.conn.commit()
         return status
 

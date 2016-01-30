@@ -1,11 +1,6 @@
 #!/usr/bin/python
 # coding: UTF-8
 
-'''
-http://stackoverflow.com/questions/16945780/decoding-base64-in-batch  
-Certutil has been around since at least Windows Server 2003. 
-
-'''
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop

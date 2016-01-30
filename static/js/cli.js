@@ -100,7 +100,9 @@ var Terminal = {
 	uploadList: [],
 	dic: {'upload_file': '',
 		  'download_file': '',
-		  'download_save_path': ''},
+		  'download_save_path': '',
+		  'LHOST': '',
+		  'LPORT': ''},
 
 	buffer: '',
 	pos: 0,

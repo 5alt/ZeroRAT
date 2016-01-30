@@ -29,7 +29,8 @@ sql = ['''CREATE TABLE client(
     'payload' TEXT NOT NULL,
     'feedback' TEXT,
     'time' INTEGER,
-    'status' INTEGER
+    'status' INTEGER,
+    'repeat' INTEGER
 );''',
 '''CREATE TABLE uploadfiles(
     'id' INTEGER PRIMARY KEY,
@@ -44,7 +45,13 @@ sql = ['''CREATE TABLE client(
     'originalname' VARCHAR(256) NOT NULL,
     'filename' VARCHAR(256) NOT NULL,
     'comment' TEXT
-);''']
+);''',
+'''CREATE TABLE settings(
+    'key' VARCHAR(256) NOT NULL PRIMARY KEY,
+    'value' TEXT NOT NULL
+);''',
+'''INSERT INTO `settings`(key, value) VALUES('LHOST', '127.0.0.1');''',
+'''INSERT INTO `settings`(key, value) VALUES('LPORT', '4444');''']
 
 conn = db.connect(config.DB_STRING)
 cursor = conn.cursor()
