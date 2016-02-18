@@ -3,19 +3,24 @@
 import sqlite3 as db
 import os
 import config
+from flask import g
 
 class sqlite:
     def __init__(self):
-        dbFilePath = config.DB_STRING
-        if os.path.exists(dbFilePath):
-            self.conn = db.connect(dbFilePath)
-            self.conn.text_factory = str
-            self.cursor = self.conn.cursor()
-        else:
-            import install
-            self.conn = db.connect(dbFilePath)
-            self.conn.text_factory = str
-            self.cursor = self.conn.cursor()
+        self.conn = getattr(g, '_database', None)
+        if self.conn is None:
+            dbFilePath = config.DB_STRING
+            if os.path.exists(dbFilePath):
+                self.conn = db.connect(dbFilePath)
+                self.conn.text_factory = str
+                #self.cursor = self.conn.cursor()
+            else:
+                import install
+                self.conn = db.connect(dbFilePath)
+                self.conn.text_factory = str
+                #self.cursor = self.conn.cursor()
+            g._database = self.conn
+        self.cursor = self.conn.cursor()
 
     def fetchAll(self, sql,data=[]):
         result = None

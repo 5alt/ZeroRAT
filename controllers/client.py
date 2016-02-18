@@ -1,11 +1,5 @@
 #!/usr/bin/python
 # coding: UTF-8
-
-'''
-http://stackoverflow.com/questions/16945780/decoding-base64-in-batch  
-Certutil has been around since at least Windows Server 2003. 
-
-'''
 import random
 import sys
 import hashlib

