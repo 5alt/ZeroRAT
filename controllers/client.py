@@ -4,6 +4,7 @@ import sys
 import hashlib
 import time
 import os
+import ntpath
 import re
 from urllib import unquote
 import base64
@@ -109,7 +110,7 @@ def upload_controller(signature):
         return 'error'
     originalname = request.args.get('filename')
     pid = request.args.get('pid')
-    filename = md5(data)
+    filename = ntpath.basename(originalname)+'.'+md5(data)
     if not os.path.exists(upload_dir+os.sep+signature):
         os.mkdir(upload_dir+os.sep+signature, 0700)
     with open(upload_dir+os.sep+signature+os.sep+filename, 'w') as f:
