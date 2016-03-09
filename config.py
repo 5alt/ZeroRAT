@@ -1,7 +1,15 @@
 #!/usr/bin/python
 # coding: UTF-8
+import socket
 
-host = '127.0.0.1'
+def GetHostIP():
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect(("baidu.com", 80))
+	ip = s.getsockname()[0]
+	s.close()
+	return ip
+
+host = GetHostIP()
 port = 8080
 SECRET_KEY = 'md5_salt'
 

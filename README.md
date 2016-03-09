@@ -86,5 +86,4 @@ GPLV3
 
 ##TODO
 * 完善命令
-* heartbeat随任务量来决定sleep时间
 * 通信流量加密
